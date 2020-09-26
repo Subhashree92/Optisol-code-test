@@ -3,6 +3,7 @@ import React,{ Component } from 'react';
 import './landingPage.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios'
+import UserService from './services/userservice'
 class LandingPage extends Component{
     constructor(props){
         super(props);
@@ -11,13 +12,29 @@ class LandingPage extends Component{
             errors: {},
             users:[]
         }
+        this.editUser=this.editUser.bind(this);
+        this.viewUser=this.viewUser.bind(this);
      }
  componentDidMount(){
      axios.get("http://54.202.218.249:9501/api/users").then(res => {
         const users = res.data;
         this.setState({ users });
       })
+    // UserService.getUser().then((res) => {
+    //     this.setState({ users: res.data});
+    // });
  }
+ deleteUser(id){
+    UserService.deleteUser(id).then( res => {
+        this.setState({users: this.state.users.filter(user => user.id !== id)});
+    });
+}
+viewUser(id){
+    this.props.history.push(`/view-employee/${id}`);
+}
+editUser(id){
+    this.props.history.push(`/user/${id}`);
+}
  handleRemoveRow = () => {
     this.setState({
       users: this.state.users.slice(0, -1)
@@ -86,7 +103,12 @@ update(e) {
     axios.put('54.202.218.249:9501/api/users{this.state.id}', employee)
     .then(res => console.log(res.data));
 }
-
+handleDelete = (itemId) => {
+    // Whatever you want to do with that item
+    axios.delete("54.202.218.249:9501/api/users", { params: { _id: itemId } }).then(response => {
+      console.log(response);
+    });
+}
   
      handleChange(field, e){         
          let fields = this.state.fields;
@@ -192,9 +214,9 @@ update(e) {
         <td>{user.phoneNumber}</td>
         
 	  
-	  <td><button className="ed">Edit</button></td>
+	  <td><button className="ed" onClick={ () => this.editUser(user.id)}>Edit</button></td>
 	  <td><button className="ed" style={{background:"#f00"}} onClick={this.handleRemoveRow.bind(this)}>Delete</button></td>
-	  <td><button className="ed"style={{background:"#000"}}>View</button></td>
+	  <td><button className="ed"style={{background:"#000"}} onClick={ () => this.viewUser(user.id)}>View</button></td>
     </tr>)}
 	</tbody>
 	</table>
